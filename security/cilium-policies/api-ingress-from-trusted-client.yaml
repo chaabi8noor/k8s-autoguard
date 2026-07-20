@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: api-ingress-from-trusted-client
+  namespace: autoguard-demo
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: trusted-client
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
