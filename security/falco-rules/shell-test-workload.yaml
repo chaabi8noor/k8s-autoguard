@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: falco-demo
+  labels:
+    app.kubernetes.io/part-of: autoguard-falco-demo
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shell-test
+  namespace: falco-demo
+  labels:
+    app.kubernetes.io/name: shell-test
+    app.kubernetes.io/part-of: autoguard-falco-demo
+spec:
+  restartPolicy: Never
+  containers:
+    - name: shell-test
+      image: quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
+      imagePullPolicy: IfNotPresent
+      command: ["sleep", "infinity"]

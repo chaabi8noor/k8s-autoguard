@@ -1,0 +1,49 @@
+image:
+  tag: "0.44.1"
+
+controller:
+  kind: daemonset
+
+tty: true
+
+driver:
+  kind: modern_ebpf
+  modernEbpf:
+    leastPrivileged: true
+
+falco:
+  config_files: []
+  time_format_iso_8601: true
+  json_output: true
+  json_include_output_property: true
+  json_include_output_fields_property: true
+  json_include_tags_property: true
+
+customRules:
+  autoguard-runtime-rules.yaml: |-
+    - rule: AutoGuard Controlled Runtime Test
+      desc: Detects the intentionally marked command used to validate Falco in the AutoGuard lab.
+      condition: >
+        spawned_process and
+        container and
+        proc.name = touch and
+        proc.cmdline contains "autoguard-runtime-test"
+      output: >
+        AutoGuard controlled runtime test command executed
+        (user=%user.name command=%proc.cmdline container=%container.name
+        image=%container.image.repository)
+      priority: NOTICE
+      tags: [container, process, autoguard]
+
+falcoctl:
+  artifact:
+    install:
+      enabled: false
+    follow:
+      enabled: false
+
+falcosidekick:
+  enabled: false
+
+responseActions:
+  enabled: false
