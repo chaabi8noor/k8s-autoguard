@@ -26,4 +26,5 @@ fi
 
 kubectl wait --for=condition=Ready node --all --timeout=5m
 "${REPO_ROOT}/scripts/install-falco.sh" "${CLUSTER_NAME}"
+"${REPO_ROOT}/scripts/install-kyverno.sh" "${CLUSTER_NAME}"
 kubectl get nodes -o wide

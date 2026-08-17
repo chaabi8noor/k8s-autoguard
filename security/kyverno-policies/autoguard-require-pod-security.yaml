@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: autoguard-require-pod-security
+  annotations:
+    policies.kyverno.io/title: AutoGuard Require Restricted Pod Security
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+spec:
+  background: false
+  rules:
+    - name: enforce-restricted-profile
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - autoguard-policy-demo
+      validate:
+        failureAction: Enforce
+        podSecurity:
+          level: restricted
+          version: latest

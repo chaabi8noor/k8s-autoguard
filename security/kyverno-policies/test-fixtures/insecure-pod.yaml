@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: insecure-demo
+  namespace: autoguard-policy-demo
+  labels:
+    app.kubernetes.io/name: insecure-demo
+    app.kubernetes.io/part-of: autoguard-admission-demo
+spec:
+  containers:
+    - name: app
+      image: nginx:1.27-alpine

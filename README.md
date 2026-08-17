@@ -2,44 +2,43 @@
 
 K8s AutoGuard is an autonomous DevSecOps platform for detecting, analyzing, and remediating Kubernetes security events.
 
-> Current milestone: Falco runtime threat detection on a Cilium-protected local Kubernetes lab.
+> Current milestone: preventive admission control and supply-chain scanning.
 
 Project repository: [chaabi8noor/k8s-autoguard](https://github.com/chaabi8noor/k8s-autoguard)
 
 ## Current Capabilities
 
 - Reproducible two-node KIND lab on Kubernetes v1.34.3
-- Cilium v1.19.5 installed through Helm from an OCI registry
-- Hubble Relay and Hubble UI enabled for network observability
-- A trusted-only Cilium network policy demo with reproducible validation
-- Cilium connectivity validation passed: 77 applicable tests and 320 actions
-- Falco v0.44.1 deployed by Helm chart v9.1.0 as a DaemonSet on both KIND nodes
-- Modern eBPF runtime monitoring running with the chart's least-privileged mode
-- JSON runtime events and a Helm-managed AutoGuard custom detection rule
+- Cilium v1.19.5 with Hubble for network policy enforcement and flow visibility
+- Falco v0.44.1 with modern eBPF runtime detection and structured JSON alerts
+- Kyverno v1.18.2 admission control using an enforce-mode Restricted Pod Security policy
+- Trivy v0.69.3 local manifest and image scanning through Docker
+- GitHub Actions Trivy manifest gate on pull requests and `main` pushes
+- Repeatable Cilium, Falco, Kyverno, and Trivy validation scripts
 
 ## Architecture
 
 ```text
-KIND control-plane + worker
-  -> Cilium CNI with Kubernetes IPAM
-  -> Hubble Relay + Hubble UI
-  -> CiliumNetworkPolicy enforcement
-  -> Falco DaemonSet with modern eBPF
-  -> JSON runtime alerts and AutoGuard custom rules
+Git push or pull request
+  -> Trivy manifest gate + pinned-image vulnerability report
+  -> Kubernetes API server
+  -> Kyverno admission policy enforcement
+  -> Cilium network policy enforcement + Hubble flows
+  -> Falco modern-eBPF runtime detection
 ```
 
 ## Repository Layout
 
 ```text
 infra/kind/                 KIND cluster configuration
-infra/helm/                 Helm values for Cilium and Falco
-security/cilium-policies/   Demo workloads and Cilium policies
+infra/helm/                 Helm values for Cilium, Falco, and Kyverno
+security/cilium-policies/   Cilium demo workloads and network policies
 security/falco-rules/       Safe Falco runtime test workload
-scripts/                    Cluster lifecycle and validation scripts
+security/kyverno-policies/  Admission policy and safe/insecure test fixtures
+scripts/                    Cluster lifecycle, validation, and scanning scripts
+.github/workflows/          Pull-request security automation
 docs/adr/                   Architecture Decision Records
-docs/evidence/              Screenshots and validation evidence
-observability/              Future dashboards and alerts
-remediation/                Future automated response actions
+docs/evidence/              Validation evidence
 ```
 
 ## Prerequisites
@@ -56,7 +55,7 @@ remediation/                Future automated response actions
 ./scripts/create-cluster.sh
 ```
 
-The script creates the KIND cluster, installs Cilium and Hubble, waits for nodes to become ready, then installs Falco on every node.
+The lifecycle script creates KIND, installs Cilium and Hubble, installs Falco, then installs Kyverno and the scoped admission policy.
 
 Remove the lab when finished:
 
@@ -64,75 +63,39 @@ Remove the lab when finished:
 ./scripts/delete-cluster.sh
 ```
 
-## Validate Cilium
-
-```bash
-cilium status --wait
-
-cilium connectivity test \
-  --timeout 20m \
-  --hubble=false \
-  --log-check-only-test-time
-```
-
-Validated result: **77 applicable connectivity tests and 320 actions passed**.
-
-Some checks are skipped because this is a compact local lab with one schedulable worker and intentionally disabled features.
-
-## Run the Network Policy Demo
+## Validate Network and Runtime Security
 
 ```bash
 ./scripts/validate-cilium-policy-demo.sh
-```
-
-The demo verifies access before and after applying the Cilium policy:
-
-| Stage | trusted-client -> api | untrusted-client -> api |
-| --- | --- | --- |
-| Before policy | Allowed | Allowed |
-| After policy | Allowed | Denied |
-
-The `CiliumNetworkPolicy` selects the `api` workload. Once selected, ingress becomes default-deny and only `trusted-client` can reach the API on TCP port `8080`.
-
-Clean up the demo namespace:
-
-```bash
-./scripts/validate-cilium-policy-demo.sh --cleanup
-```
-
-## Validate Falco Runtime Detection
-
-```bash
 ./scripts/validate-falco-runtime-demo.sh
 ```
 
-The script starts a safe test Pod, runs a uniquely marked `touch` command, then waits for Falco to emit the `AutoGuard Controlled Runtime Test` JSON alert. The marker makes each run independently verifiable.
+The Cilium demo proves trusted traffic is allowed while an untrusted client is denied. The Falco demo proves a controlled process execution creates a structured runtime alert.
 
-To demonstrate Falco's built-in terminal-shell rule manually:
-
-```bash
-kubectl -n falco-demo exec -it shell-test -- sh
-```
-
-At the container prompt, run `exit`, then retrieve the alert:
+## Validate Admission Control
 
 ```bash
-
-kubectl -n falco logs \
-  -l app.kubernetes.io/name=falco \
-  -c falco \
-  --since=2m \
-  --prefix=true | \
-  grep -F 'Terminal shell in container'
+./scripts/validate-kyverno-policy-demo.sh
 ```
 
-This detects an interactive shell in a container. It is a runtime signal to investigate, not proof that every `kubectl exec` action is malicious.
+The validator uses API-server dry runs, so it creates no demo Pods. It proves a Pod meeting the Restricted profile is admitted and a Pod without a security context is rejected before scheduling.
 
-Clean up the Falco demo namespace:
+Clean up the validation namespace:
 
 ```bash
-./scripts/validate-falco-runtime-demo.sh --cleanup
+./scripts/validate-kyverno-policy-demo.sh --cleanup
 ```
+
+## Run Trivy Scans
+
+```bash
+./scripts/scan-trivy.sh --config
+
+./scripts/scan-trivy.sh --image \
+  quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
+```
+
+The manifest scan fails on high or critical misconfigurations. The image scan reports high and critical fixed vulnerabilities without failing the command because this lab does not yet own an application image to remediate.
 
 ## Inspect Flows in Hubble
 
@@ -144,25 +107,23 @@ Open [http://localhost:12000](http://localhost:12000) and select the `autoguard-
 
 ## Evidence
 
-This milestone includes:
-
 - Cilium connectivity validation: 77 tests and 320 actions passed
-- Trusted client successfully reached the API while an untrusted client timed out after policy enforcement
-- Hubble visualized application traffic in `autoguard-demo`
-- Falco v0.44.1 loaded its modern BPF probe on both KIND nodes
-- A controlled terminal shell generated Falco's built-in `Terminal shell in container` event
-- The validation script generated and found the `AutoGuard Controlled Runtime Test` JSON alert
+- Hubble visualized allowed and denied application traffic
+- Falco detected both a custom controlled command and an interactive container shell
+- Kyverno server-side validation admits the secure fixture and rejects the insecure fixture
+- Trivy manifest gate passed locally with zero high or critical findings; the GitHub Actions manifest gate and pinned-image report both passed
 - [Falco runtime validation evidence](docs/evidence/003-falco-runtime-validation.md)
+- [Preventive security validation evidence](docs/evidence/004-preventive-security-validation.md)
 
 ## Decisions
 
 - [ADR 001: KIND baseline](docs/adr/001-kind-baseline.md)
 - [ADR 002: Cilium network security](docs/adr/002-cilium-network-security.md)
 - [ADR 003: Falco runtime detection](docs/adr/003-falco-runtime-detection.md)
+- [ADR 004: Kyverno admission control](docs/adr/004-kyverno-admission-control.md)
+- [ADR 005: Trivy supply-chain scanning](docs/adr/005-trivy-supply-chain-scanning.md)
 
 ## Next Steps
 
-- Add Kyverno admission policies
-- Add Trivy image and manifest scanning
 - Add Prometheus, Loki, and Grafana observability
 - Build automated remediation workflows

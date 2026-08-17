@@ -1,0 +1,16 @@
+crds:
+  migration:
+    # A fresh KIND lab has no legacy Kyverno resources to migrate.
+    enabled: false
+
+admissionController:
+  replicas: 1
+
+backgroundController:
+  replicas: 1
+
+cleanupController:
+  replicas: 1
+
+reportsController:
+  replicas: 1
