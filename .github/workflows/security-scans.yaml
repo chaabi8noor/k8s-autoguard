@@ -1,4 +1,4 @@
-name: Security scans
+name: K8s AutoGuard Security Validation
 
 on:
   pull_request:
@@ -12,14 +12,14 @@ permissions:
 
 jobs:
   trivy-scans:
-    name: Trivy security scans
+    name: Kubernetes Manifest and Image Validation
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Run Trivy manifest gate
+      - name: Validate Kubernetes Manifests
         run: ./scripts/scan-trivy.sh --config
-      - name: Run Trivy pinned-image report
+      - name: Scan Pinned Container Image
         run: >-
           ./scripts/scan-trivy.sh --image
           quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
