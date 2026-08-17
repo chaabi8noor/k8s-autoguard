@@ -111,7 +111,7 @@ Open [http://localhost:12000](http://localhost:12000) and select the `autoguard-
 - Hubble visualized allowed and denied application traffic
 - Falco detected both a custom controlled command and an interactive container shell
 - Kyverno server-side validation admits the secure fixture and rejects the insecure fixture
-- Trivy manifest gate passed locally with zero high or critical findings; the pinned-image report also runs in GitHub Actions
+- Trivy manifest gate passed locally with zero high or critical findings; the GitHub Actions manifest gate and pinned-image report both passed
 - [Falco runtime validation evidence](docs/evidence/003-falco-runtime-validation.md)
 - [Preventive security validation evidence](docs/evidence/004-preventive-security-validation.md)
 

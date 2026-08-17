@@ -28,6 +28,11 @@ The deliberately insecure fixture is excluded because it exists solely to prove 
 
 `./scripts/scan-trivy.sh --image <pinned-image>` is the local reporting command for the pinned Cilium curl image. Its initial vulnerability-database download from the external Trivy mirror was too slow to complete during this validation. The pull-request workflow runs the same image scan on a GitHub-hosted runner, where its result becomes part of the review record.
 
+GitHub Actions run `32042109545` completed successfully after the temporary action-download rate limit cleared:
+
+- `Trivy manifest gate`: passed.
+- `Trivy image report`: passed.
+
 ## Reproduce
 
 ```bash
