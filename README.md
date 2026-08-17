@@ -97,6 +97,14 @@ Clean up the validation namespace:
 
 The manifest scan fails on high or critical misconfigurations. The image scan reports high and critical fixed vulnerabilities without failing the command because this lab does not yet own an application image to remediate.
 
+## Record a Security Demo
+
+```bash
+./scripts/run-security-gates-demo.sh --interactive
+```
+
+The guided script pauses between live Cilium, Kyverno, Trivy, and GitHub Actions scenes so they can be recorded cleanly. Use the [video demo runbook](docs/demo/security-gates-video-demo.md) for narration and timing.
+
 ## Inspect Flows in Hubble
 
 ```bash
