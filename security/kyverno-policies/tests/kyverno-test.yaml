@@ -1,0 +1,25 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: autoguard-require-pod-security
+
+policies:
+  - ../autoguard-require-pod-security.yaml
+
+resources:
+  - ../test-fixtures/secure-pod.yaml
+  - ../test-fixtures/insecure-pod.yaml
+
+results:
+  - policy: autoguard-require-pod-security
+    rule: enforce-restricted-profile
+    resources:
+      - autoguard-policy-demo/secure-demo
+    kind: Pod
+    result: pass
+  - policy: autoguard-require-pod-security
+    rule: enforce-restricted-profile
+    resources:
+      - autoguard-policy-demo/insecure-demo
+    kind: Pod
+    result: fail
