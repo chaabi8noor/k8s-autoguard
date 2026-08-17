@@ -11,33 +11,15 @@ permissions:
   contents: read
 
 jobs:
-  manifest-scan:
-    name: Trivy manifest gate
+  trivy-scans:
+    name: Trivy security scans
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Scan Kyverno manifests
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          version: v0.69.3
-          scan-type: config
-          scan-ref: security/kyverno-policies
-          severity: HIGH,CRITICAL
-          exit-code: 1
-        env:
-          TRIVY_SKIP_FILES: security/kyverno-policies/test-fixtures/insecure-pod.yaml
-
-  image-scan:
-    name: Trivy image report
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Scan pinned demo image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          version: v0.69.3
-          scan-type: image
-          image-ref: quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 0
+      - name: Run Trivy manifest gate
+        run: ./scripts/scan-trivy.sh --config
+      - name: Run Trivy pinned-image report
+        run: >-
+          ./scripts/scan-trivy.sh --image
+          quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
