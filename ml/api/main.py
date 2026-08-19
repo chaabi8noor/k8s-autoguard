@@ -1,9 +1,12 @@
 """FastAPI contract for K8s AutoGuard anomaly classification."""
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
 
-from ml.model import Detector, classify_event
+from ml.model import Detector, classify_event, load_detector
 
 
 class PredictionRequest(BaseModel):
@@ -51,4 +54,12 @@ def create_app(detector: Detector | None = None) -> FastAPI:
     return app
 
 
-app = create_app()
+def create_runtime_app(model_path: Path | str | None = None) -> FastAPI:
+    resolved_path = Path(
+        model_path or os.getenv("AUTOGUARD_MODEL_PATH", "ml/models/isolation_forest_v1.joblib")
+    )
+    detector = load_detector(resolved_path) if resolved_path.is_file() else None
+    return create_app(detector)
+
+
+app = create_runtime_app()
