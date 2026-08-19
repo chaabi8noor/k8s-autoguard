@@ -1,0 +1,10 @@
+{
+  "normal_training_events": 400,
+  "total_evaluation_events": 520,
+  "accuracy": 0.9385,
+  "precision": 0.7895,
+  "recall": 1.0,
+  "false_positive_rate": 0.08,
+  "model_path": "ml/models/isolation_forest_v1.joblib",
+  "report_path": "ml/models/model_report.json"
+}
