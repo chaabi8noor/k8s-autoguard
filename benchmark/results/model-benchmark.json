@@ -1,0 +1,6 @@
+{
+  "events": 520,
+  "recall": 1.0,
+  "false_positive_rate": 0.08,
+  "p95_detection_ms": 38.689335999947616
+}

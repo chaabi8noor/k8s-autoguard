@@ -1,0 +1,31 @@
+---
+- name: Bootstrap the K8s AutoGuard local lab
+  hosts: local
+  gather_facts: false
+  vars:
+    repository_root: "{{ playbook_dir }}/../.."
+  tasks:
+    - name: Verify required local tools
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/check-env.sh"
+      changed_when: false
+
+    - name: Create the Cilium-ready KIND cluster
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/create-cluster.sh"
+      register: cluster_creation
+      changed_when: "'Creating cluster' in cluster_creation.stdout"
+
+    - name: Install Falco runtime detection
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/install-falco.sh"
+      changed_when: false
+
+    - name: Install Kyverno admission policy enforcement
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/install-kyverno.sh"
+      changed_when: false
