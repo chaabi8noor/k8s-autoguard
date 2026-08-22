@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir --retries 5 --timeout 120 -r requirements.txt
 
 COPY ml ./ml
 COPY remediation ./remediation
+COPY observability ./observability
 
 RUN adduser --system --uid 10001 --group autoguard
 USER 10001

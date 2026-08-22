@@ -42,3 +42,32 @@ def test_event_endpoint_returns_an_explainable_dry_run_isolation() -> None:
     assert response.json()["execute"] is True
     assert response.json()["executed_resource"].startswith("dry-run:ciliumnetworkpolicy/")
     assert response.json()["evidence"] == ["shell-execution"]
+
+
+def test_metrics_reports_remediation_decision() -> None:
+    async def exercise_metrics() -> httpx.Response:
+        transport = httpx.ASGITransport(app=create_app(StaticClassifier(), DryRunExecutor()))
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            await client.post(
+                "/events",
+                json={
+                    "event": {
+                        "event_id": "evt-101",
+                        "rule": "Terminal shell in container",
+                        "namespace": "autoguard-demo",
+                        "pod": "shell-test-abc123",
+                        "container": "shell-test",
+                        "severity": "Critical",
+                    },
+                    "features": {"shell_exec": 1.0},
+                },
+            )
+            return await client.get("/metrics")
+
+    response = asyncio.run(exercise_metrics())
+
+    assert response.status_code == 200
+    assert (
+        'autoguard_remediation_decisions_total{action="isolate_workload",mode="dry_run"} 1'
+        in response.text
+    )

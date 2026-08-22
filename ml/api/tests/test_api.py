@@ -78,3 +78,27 @@ def test_runtime_app_loads_a_saved_detector(tmp_path: Path) -> None:
     assert health.json() == {"status": "ok"}
     assert prediction.status_code == 200
     assert prediction.json()["is_anomaly"] is True
+
+
+def test_metrics_reports_prediction_outcome() -> None:
+    async def exercise_metrics() -> httpx.Response:
+        transport = httpx.ASGITransport(app=create_app(detector_for_test()))
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            await client.post(
+                "/predict",
+                json={
+                    "cpu_percent": 97,
+                    "memory_percent": 94,
+                    "network_connections": 160,
+                    "process_count": 48,
+                    "shell_exec": 1,
+                    "sensitive_file_access": 1,
+                    "denied_egress": 12,
+                },
+            )
+            return await client.get("/metrics")
+
+    response = asyncio.run(exercise_metrics())
+
+    assert response.status_code == 200
+    assert 'autoguard_predictions_total{outcome="anomaly"} 1' in response.text
