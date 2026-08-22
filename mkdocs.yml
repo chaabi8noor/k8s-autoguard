@@ -9,6 +9,9 @@ nav:
       - Falco runtime: evidence/003-falco-runtime-validation.md
       - Preventive security: evidence/004-preventive-security-validation.md
       - Model benchmark: evidence/005-model-benchmark.md
+      - Observability validation: evidence/006-observability-validation.md
+  - Demo: demo/final-project-demo.md
+  - Final report: final-report.md
   - Architecture decisions:
       - KIND baseline: adr/001-kind-baseline.md
       - Cilium network security: adr/002-cilium-network-security.md
@@ -17,3 +20,4 @@ nav:
       - Trivy supply-chain scanning: adr/005-trivy-supply-chain-scanning.md
       - GitOps and IaC: adr/006-gitops-and-iac.md
       - Guarded remediation: adr/007-guarded-anomaly-remediation.md
+      - Local observability: adr/008-local-observability-stack.md

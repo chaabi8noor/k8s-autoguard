@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: autoguard-security-signals
+  namespace: autoguard-system
+  labels:
+    app.kubernetes.io/part-of: k8s-autoguard
+spec:
+  groups:
+    - name: autoguard.security
+      rules:
+        - alert: AutoGuardAnomalyDetected
+          expr: increase(autoguard_predictions_total{outcome="anomaly"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+            component: anomaly-detection
+          annotations:
+            summary: K8s AutoGuard detected an anomalous security event.
+            description: The ML inference API classified at least one event as anomalous in the last five minutes.
+        - alert: AutoGuardRemediationApplied
+          expr: increase(autoguard_remediation_decisions_total{mode="executed"}[5m]) > 0
+          labels:
+            severity: critical
+            component: guarded-remediation
+          annotations:
+            summary: K8s AutoGuard applied a scoped remediation action.
+            description: Confirm the Cilium policy is limited to the intended affected workload and namespace.

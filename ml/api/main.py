@@ -4,9 +4,11 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from ml.model import Detector, classify_event, load_detector
+from observability.metrics import AutoGuardMetrics, PROMETHEUS_CONTENT_TYPE
 
 
 class PredictionRequest(BaseModel):
@@ -29,10 +31,18 @@ class PredictionResponse(BaseModel):
 def create_app(detector: Detector | None = None) -> FastAPI:
     app = FastAPI(title="K8s AutoGuard ML API", version="1.0.0")
     app.state.detector = detector
+    app.state.metrics = AutoGuardMetrics()
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
         return {"status": "ok" if app.state.detector is not None else "model-unavailable"}
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics() -> Response:
+        return Response(
+            content=app.state.metrics.render(),
+            media_type=PROMETHEUS_CONTENT_TYPE,
+        )
 
     @app.post("/predict", response_model=PredictionResponse)
     def predict(request: PredictionRequest) -> PredictionResponse:
@@ -44,6 +54,10 @@ def create_app(detector: Detector | None = None) -> FastAPI:
             )
 
         classification = classify_event(active_detector, request.model_dump())
+        app.state.metrics.record_prediction(
+            is_anomaly=classification.is_anomaly,
+            risk_score=classification.risk_score,
+        )
         return PredictionResponse(
             is_anomaly=classification.is_anomaly,
             risk_score=classification.risk_score,

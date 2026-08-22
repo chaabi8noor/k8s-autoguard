@@ -29,3 +29,21 @@
         argv:
           - "{{ repository_root }}/scripts/install-kyverno.sh"
       changed_when: false
+
+    - name: Deploy the anomaly and guarded remediation APIs
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/deploy-autoguard-platform.sh"
+      changed_when: false
+
+    - name: Install metrics, logs, dashboard, and alerting
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/install-observability.sh"
+      changed_when: false
+
+    - name: Install Argo CD GitOps controller
+      ansible.builtin.command:
+        argv:
+          - "{{ repository_root }}/scripts/install-argocd.sh"
+      changed_when: false

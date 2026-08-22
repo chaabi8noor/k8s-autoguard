@@ -12,6 +12,7 @@ Project repository: [chaabi8noor/k8s-autoguard](https://github.com/chaabi8noor/k
 - Kyverno Restricted Pod Security admission enforcement and Trivy supply-chain gates
 - A deterministic security-event dataset, Isolation Forest anomaly detector, and FastAPI inference API
 - A guarded remediation API that defaults to dry run and can create Cilium isolation policies only in `autoguard-demo`
+- Prometheus service metrics, Loki log aggregation, Grafana dashboard provisioning, and scoped security alerts
 - Terraform, Ansible, and Argo CD definitions for declarative infrastructure and post-review delivery
 
 ## Architecture
@@ -24,6 +25,7 @@ Git push or pull request
   -> Falco runtime detection
   -> normalized event + ML anomaly classification
   -> guarded remediation decision
+  -> Prometheus metrics + Loki logs + Grafana security overview
   -> optional, scoped Cilium workload isolation
 ```
 
@@ -34,6 +36,7 @@ infra/kind/                 KIND cluster configuration
 infra/terraform/            Terraform declaration for the Cilium-ready lab
 infra/ansible/              Local bootstrap orchestration
 infra/helm/                 Helm values for Cilium, Falco, and Kyverno
+observability/              Prometheus rules, ServiceMonitors, and Grafana dashboard
 deployments/                ML and remediation Kubernetes workloads
 gitops/                     Argo CD Application definitions
 security/                   Cilium, Falco, and Kyverno policies
@@ -65,9 +68,19 @@ docs/                       ADRs, evidence, and demo material
 
 ```bash
 ./scripts/deploy-autoguard-platform.sh
+./scripts/install-observability.sh
 ```
 
 This builds the pinned-base Python image, loads it directly into KIND, and deploys the ML inference and remediation APIs. Remediation starts in `dry-run` mode. Its active mode is guarded by namespace, severity, risk threshold, and narrow Kubernetes RBAC.
+
+## Observability
+
+```bash
+./scripts/install-observability.sh
+./scripts/run-final-project-demo.sh --interactive
+```
+
+The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks predictions, latest risk, remediation mode, and platform logs. It is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
 
 ## Model Benchmark
 
@@ -100,6 +113,10 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 - [Falco runtime validation](docs/evidence/003-falco-runtime-validation.md)
 - [Preventive security validation](docs/evidence/004-preventive-security-validation.md)
 - [Model benchmark](docs/evidence/005-model-benchmark.md)
+- [Observability validation plan](docs/evidence/006-observability-validation.md)
+- [Final video demo runbook](docs/demo/final-project-demo.md)
+- [Final project report](docs/final-report.md)
+- [Final project report PDF](output/pdf/k8s-autoguard-final-report.pdf)
 
 ## Decisions
 
@@ -110,6 +127,7 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 - [ADR 005: Trivy supply-chain scanning](docs/adr/005-trivy-supply-chain-scanning.md)
 - [ADR 006: GitOps and IaC](docs/adr/006-gitops-and-iac.md)
 - [ADR 007: Guarded anomaly remediation](docs/adr/007-guarded-anomaly-remediation.md)
+- [ADR 008: Local observability stack](docs/adr/008-local-observability-stack.md)
 
 ## Current Operational Status
 
