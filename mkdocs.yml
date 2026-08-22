@@ -1,0 +1,19 @@
+site_name: K8s AutoGuard
+site_description: Autonomous Kubernetes DevSecOps lab
+repo_url: https://github.com/chaabi8noor/k8s-autoguard
+theme:
+  name: material
+nav:
+  - Overview: index.md
+  - Evidence:
+      - Falco runtime: evidence/003-falco-runtime-validation.md
+      - Preventive security: evidence/004-preventive-security-validation.md
+      - Model benchmark: evidence/005-model-benchmark.md
+  - Architecture decisions:
+      - KIND baseline: adr/001-kind-baseline.md
+      - Cilium network security: adr/002-cilium-network-security.md
+      - Falco runtime detection: adr/003-falco-runtime-detection.md
+      - Kyverno admission control: adr/004-kyverno-admission-control.md
+      - Trivy supply-chain scanning: adr/005-trivy-supply-chain-scanning.md
+      - GitOps and IaC: adr/006-gitops-and-iac.md
+      - Guarded remediation: adr/007-guarded-anomaly-remediation.md
