@@ -1,4 +1,4 @@
-name: Security scans
+name: K8s AutoGuard Security Gates
 
 on:
   pull_request:
@@ -11,15 +11,61 @@ permissions:
   contents: read
 
 jobs:
-  trivy-scans:
-    name: Trivy security scans
+  kyverno-policy-tests:
+    name: Kyverno Admission Policy Tests
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Run Trivy manifest gate
+      - name: Test secure and insecure Pod fixtures
+        run: ./scripts/test-kyverno-policy.sh
+      - name: Publish policy test summary
+        if: always()
+        run: |
+          {
+            echo "## Kyverno admission-policy gate"
+            echo
+            echo "- Secure Pod fixture: expected to pass"
+            echo "- Insecure Pod fixture: expected to be rejected"
+            echo "- Policy: `autoguard-require-pod-security`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  trivy-manifest-gate:
+    name: Trivy Kubernetes Manifest Gate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Block HIGH and CRITICAL manifest misconfigurations
         run: ./scripts/scan-trivy.sh --config
-      - name: Run Trivy pinned-image report
+      - name: Publish manifest scan summary
+        if: always()
+        run: |
+          {
+            echo "## Trivy Kubernetes manifest gate"
+            echo
+            echo "- Target: `security/kyverno-policies`"
+            echo "- Threshold: HIGH and CRITICAL misconfigurations"
+            echo "- Result: this job fails when the gate detects a finding"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  trivy-image-report:
+    name: Trivy Pinned Image Report
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Report HIGH and CRITICAL vulnerabilities for the pinned image
         run: >-
           ./scripts/scan-trivy.sh --image
           quay.io/cilium/alpine-curl:v1.10.0@sha256:913e8c9f3d960dde03882defa0edd3a919d529c2eb167caa7f54194528bde364
+      - name: Publish image scan summary
+        if: always()
+        run: |
+          {
+            echo "## Trivy pinned-image report"
+            echo
+            echo "- Image: `quay.io/cilium/alpine-curl:v1.10.0`"
+            echo "- Scanner: vulnerabilities only"
+            echo "- Threshold shown in report: HIGH and CRITICAL"
+          } >> "$GITHUB_STEP_SUMMARY"
