@@ -39,6 +39,9 @@ if [[ "$(kubectl config current-context)" != "${CONTEXT}" ]]; then
 fi
 
 kubectl -n "${FALCO_NAMESPACE}" rollout status daemonset/falco --timeout=5m
+kubectl -n "${DEMO_NAMESPACE}" delete pod "${DEMO_POD}" \
+  --ignore-not-found \
+  --wait=true
 kubectl apply -f "${WORKLOAD_FILE}"
 kubectl -n "${DEMO_NAMESPACE}" wait \
   --for=condition=Ready "pod/${DEMO_POD}" \

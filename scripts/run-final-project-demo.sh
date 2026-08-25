@@ -52,8 +52,10 @@ scene "Scene 4: ML anomaly classification"
 kubectl run autoguard-ml-signal \
   --namespace autoguard-system \
   --rm \
+  --attach \
   --restart=Never \
   --image "${CURL_IMAGE}" \
+  --command \
   -- curl --silent --show-error --fail \
   --request POST \
   --header "Content-Type: application/json" \
@@ -65,8 +67,10 @@ scene "Scene 5: Guarded dry-run remediation"
 kubectl run autoguard-remediation-signal \
   --namespace autoguard-system \
   --rm \
+  --attach \
   --restart=Never \
   --image "${CURL_IMAGE}" \
+  --command \
   -- curl --silent --show-error --fail \
   --request POST \
   --header "Content-Type: application/json" \

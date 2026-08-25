@@ -16,6 +16,7 @@ docker build --tag "${IMAGE}" "${REPO_ROOT}"
 kind load docker-image "${IMAGE}" --name "${CLUSTER_NAME}"
 
 kubectl apply -f "${MANIFEST_FILE}"
+kubectl -n autoguard-system rollout restart deployment/autoguard-ml-api deployment/autoguard-remediation
 kubectl -n autoguard-system rollout status deployment/autoguard-ml-api --timeout=5m
 kubectl -n autoguard-system rollout status deployment/autoguard-remediation --timeout=5m
 kubectl -n autoguard-system get pods,svc -o wide

@@ -17,13 +17,15 @@ grafana:
       access: proxy
       url: http://loki.loki.svc.cluster.local:3100
       editable: false
+  livenessProbe:
+    initialDelaySeconds: 180
   resources:
     requests:
       cpu: 50m
       memory: 128Mi
     limits:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 1
+      memory: 1Gi
 
 prometheusOperator:
   resources:
