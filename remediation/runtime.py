@@ -9,6 +9,16 @@ from remediation.engine import Classification
 from remediation.api import create_app
 from remediation.executors import DryRunExecutor, KubernetesCiliumExecutor
 
+DEFAULT_MODEL_FEATURES: dict[str, float] = {
+    "cpu_percent": 0.0,
+    "memory_percent": 0.0,
+    "network_connections": 0.0,
+    "process_count": 0.0,
+    "shell_exec": 0.0,
+    "sensitive_file_access": 0.0,
+    "denied_egress": 0.0,
+}
+
 
 class HttpClassifier:
     """Call the separately deployed ML API for a classification."""
@@ -18,7 +28,8 @@ class HttpClassifier:
         self.client = client or httpx.Client(timeout=5.0)
 
     def classify(self, features: Mapping[str, float]) -> Classification:
-        response = self.client.post(self.endpoint, json=dict(features))
+        payload = {**DEFAULT_MODEL_FEATURES, **features}
+        response = self.client.post(self.endpoint, json=payload)
         response.raise_for_status()
         payload = response.json()
         return Classification(

@@ -12,6 +12,12 @@ singleBinary:
   replicas: 1
   persistence:
     enabled: false
+  extraVolumeMounts:
+    - name: loki-data
+      mountPath: /var/loki
+  extraVolumes:
+    - name: loki-data
+      emptyDir: {}
   resources:
     requests:
       cpu: 50m
@@ -30,4 +36,13 @@ backend:
   replicas: 0
 
 gateway:
+  enabled: false
+
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+ruler:
   enabled: false
