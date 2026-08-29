@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: falco-demo
+  name: autoguard-demo
   labels:
     app.kubernetes.io/part-of: autoguard-falco-demo
 ---
@@ -9,7 +9,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: shell-test
-  namespace: falco-demo
+  namespace: autoguard-demo
   labels:
     app.kubernetes.io/name: shell-test
     app.kubernetes.io/part-of: autoguard-falco-demo

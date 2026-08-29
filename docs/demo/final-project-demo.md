@@ -21,18 +21,16 @@ kubectl -n monitoring port-forward service/autoguard-monitoring-grafana 3000:80
 
 1. Show the two-node KIND cluster and healthy Cilium status.
 2. Show Kyverno accepting the secure Pod and rejecting the insecure Pod.
-3. Show Falco detecting the controlled runtime event.
-4. Show the ML API classifying a high-anomaly runtime outlier.
-5. Show the remediation API returning a scoped dry-run isolation decision.
-6. Show `/metrics` evidence, then the Grafana security overview dashboard and Loki logs.
-7. Show the four protected GitHub Actions checks on `main`.
+3. Run the real Falco-to-remediation validation. Show the timestamped `touch` command, its Falco alert, the forwarded event, ML result, and scoped dry-run isolation decision in one terminal flow.
+4. Show `/metrics` evidence, then the Grafana security overview dashboard and Loki logs.
+5. Show the four protected GitHub Actions checks on `main`.
 
 ## What to Explain
 
 - Cilium governs network identity and policy enforcement.
 - Kyverno prevents insecure workloads from being admitted.
-- Falco detects runtime behavior after a workload starts.
-- The model adds a baseline-relative anomaly score and evidence to the event; it is not a compromise probability.
+- Falco detects runtime behavior after a workload starts, and Sidekick forwards its structured alert to the AutoGuard event ingestor.
+- The current ingestor derives only `shell_exec` and `process_count` from the observed controlled Falco event; unavailable CPU, memory, and network fields are zero. The model adds a baseline-relative anomaly score and evidence to that event; it is not a compromise probability.
 - Remediation is guarded: dry run is the default, and mutation is limited to a Cilium policy in `autoguard-demo`.
 - Grafana distinguishes detections, dry-run recommendations, and genuinely executed actions.
 

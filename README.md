@@ -8,7 +8,7 @@ Project repository: [chaabi8noor/k8s-autoguard](https://github.com/chaabi8noor/k
 
 - A reproducible Cilium-ready two-node KIND lab on Kubernetes v1.34.3
 - Cilium and Hubble for identity-aware policy enforcement and flow visibility
-- Falco modern eBPF runtime detection with structured JSON events
+- Falco modern eBPF runtime detection, Falco Sidekick delivery, and real-event ingestion
 - Kyverno Restricted Pod Security admission enforcement and Trivy supply-chain gates
 - A deterministic security-event dataset, Isolation Forest anomaly detector, and FastAPI inference API
 - A guarded remediation API that defaults to dry run and can create Cilium isolation policies only in `autoguard-demo`
@@ -23,7 +23,8 @@ Git push or pull request
   -> Kubernetes API + Kyverno admission enforcement
   -> Cilium policies + Hubble network evidence
   -> Falco runtime detection
-  -> normalized event + ML anomaly classification
+  -> Falco Sidekick webhook
+  -> AutoGuard event ingestor + ML anomaly classification
   -> guarded remediation decision
   -> Prometheus metrics + Loki logs + Grafana security overview
   -> optional, scoped Cilium workload isolation
@@ -69,9 +70,21 @@ docs/                       ADRs, evidence, and demo material
 ```bash
 ./scripts/deploy-autoguard-platform.sh
 ./scripts/install-observability.sh
+./scripts/validate-live-falco-pipeline.sh
 ```
 
-This builds the pinned-base Python image, loads it directly into KIND, and deploys the ML inference and remediation APIs. Remediation starts in `dry-run` mode. Its active mode is guarded by namespace, severity, risk threshold, and narrow Kubernetes RBAC.
+This builds the pinned-base Python image, loads it directly into KIND, and deploys the event-ingestion, ML inference, and remediation APIs. The live validation triggers a timestamped `touch` command inside the demo workload. Falco detects it, Sidekick forwards the structured alert, the ingestor calls the ML API, and guarded remediation records a dry-run isolation decision. Remediation starts in `dry-run` mode; active mode is guarded by namespace, severity, risk threshold, and narrow Kubernetes RBAC.
+
+## Runtime Event Boundary
+
+The event-to-decision path is live rather than a synthetic HTTP demonstration:
+
+```text
+kubectl exec -> Falco rule -> Falco Sidekick -> /falco-events
+  -> event ingestor -> ML API -> guarded dry-run remediation
+```
+
+The ingestor accepts only the AutoGuard-tagged controlled Falco rule and requires the namespace, pod, container, and command fields. It derives `shell_exec` and `process_count` from that observed event. CPU, memory, and network features are set to zero when Falco does not provide them. Therefore the resulting score is a narrow, baseline-relative anomaly score for this runtime signal, not a probability that the workload is compromised and not a complete production risk model.
 
 ## Observability
 
@@ -80,7 +93,7 @@ This builds the pinned-base Python image, loads it directly into KIND, and deplo
 ./scripts/run-final-project-demo.sh --interactive
 ```
 
-The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks predictions, the latest fresh baseline-relative anomaly score, remediation mode, and platform logs. The anomaly score is not a compromise probability. This is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
+The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks forwarded Falco events, predictions, the latest fresh baseline-relative anomaly score, remediation mode, and platform logs. The anomaly score is not a compromise probability. This is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
 
 ## Model Benchmark
 
@@ -114,6 +127,7 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 - [Preventive security validation](docs/evidence/004-preventive-security-validation.md)
 - [Model benchmark](docs/evidence/005-model-benchmark.md)
 - [Observability validation plan](docs/evidence/006-observability-validation.md)
+- [Live Falco-to-remediation validation](docs/evidence/009-live-falco-event-ingestion.md)
 - [Final video demo runbook](docs/demo/final-project-demo.md)
 - [Final project report](docs/final-report.md)
 - [Final project report PDF](output/pdf/k8s-autoguard-final-report.pdf)
@@ -128,7 +142,8 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 - [ADR 006: GitOps and IaC](docs/adr/006-gitops-and-iac.md)
 - [ADR 007: Guarded anomaly remediation](docs/adr/007-guarded-anomaly-remediation.md)
 - [ADR 008: Local observability stack](docs/adr/008-local-observability-stack.md)
+- [ADR 009: Real Falco event ingestion](docs/adr/009-real-falco-event-ingestion.md)
 
 ## Current Operational Status
 
-The code, policies, IaC, and benchmark are versioned and locally validated. Docker Desktop WSL integration must be enabled before rerunning live deployment, Argo CD installation, and end-to-end cluster evidence collection.
+The code, policies, IaC, benchmark, and live Falco-to-remediation path are versioned and locally validated. This remains a local lab: Docker Desktop WSL integration is required to recreate its live deployment, and the runtime feature mapping intentionally needs richer telemetry before it can support production risk decisions.

@@ -17,6 +17,7 @@ class AutoGuardMetrics:
         self._clock = clock
         self._prediction_totals: Counter[str] = Counter()
         self._remediation_totals: Counter[tuple[str, str]] = Counter()
+        self._falco_event_totals: Counter[str] = Counter()
         self._latest_risk_score: float | None = None
         self._latest_prediction_timestamp_seconds: float | None = None
 
@@ -31,10 +32,15 @@ class AutoGuardMetrics:
         with self._lock:
             self._remediation_totals[(action, mode)] += 1
 
+    def record_falco_event(self, *, outcome: str) -> None:
+        with self._lock:
+            self._falco_event_totals[outcome] += 1
+
     def render(self) -> str:
         with self._lock:
             prediction_totals = dict(self._prediction_totals)
             remediation_totals = dict(self._remediation_totals)
+            falco_event_totals = dict(self._falco_event_totals)
             latest_risk_score = self._latest_risk_score
             latest_prediction_timestamp_seconds = self._latest_prediction_timestamp_seconds
 
@@ -46,6 +52,18 @@ class AutoGuardMetrics:
             lines.append(
                 f'autoguard_predictions_total{{outcome="{outcome}"}} '
                 f"{prediction_totals.get(outcome, 0)}"
+            )
+
+        lines.extend(
+            [
+                "# HELP autoguard_falco_events_total Falco runtime events received by the AutoGuard ingestor.",
+                "# TYPE autoguard_falco_events_total counter",
+            ]
+        )
+        for outcome in ("forwarded", "ignored", "duplicate"):
+            lines.append(
+                f'autoguard_falco_events_total{{outcome="{outcome}"}} '
+                f"{falco_event_totals.get(outcome, 0)}"
             )
 
         lines.extend(

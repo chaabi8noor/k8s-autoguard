@@ -24,6 +24,12 @@ metadata:
   name: autoguard-remediation
   namespace: autoguard-system
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: autoguard-event-ingestor
+  namespace: autoguard-system
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -121,6 +127,89 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: autoguard-ml-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoguard-event-ingestor
+  namespace: autoguard-system
+  labels:
+    app.kubernetes.io/name: autoguard-event-ingestor
+    app.kubernetes.io/part-of: k8s-autoguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: autoguard-event-ingestor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: autoguard-event-ingestor
+        app.kubernetes.io/part-of: k8s-autoguard
+    spec:
+      serviceAccountName: autoguard-event-ingestor
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: k8s-autoguard-platform:dev
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "ingestion.runtime:app", "--host", "0.0.0.0", "--port", "8000"]
+          env:
+            - name: AUTOGUARD_REMEDIATION_URL
+              value: http://autoguard-remediation.autoguard-system.svc.cluster.local:8000/events
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoguard-event-ingestor
+  namespace: autoguard-system
+  labels:
+    app.kubernetes.io/name: autoguard-event-ingestor
+    app.kubernetes.io/part-of: k8s-autoguard
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: autoguard-event-ingestor
   ports:
     - name: http
       port: 8000
