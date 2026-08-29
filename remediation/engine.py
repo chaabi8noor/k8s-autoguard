@@ -25,7 +25,7 @@ class SecurityEvent:
 
 @dataclass(frozen=True)
 class Classification:
-    """Model result using a normalized 0.0 to 1.0 risk score."""
+    """Model result using a normalized 0.0 to 1.0 anomaly score."""
 
     is_anomaly: bool
     risk_score: float
@@ -60,7 +60,7 @@ class RemediationPolicy:
             return Decision(Action.ALERT_ONLY, False, "event namespace is outside remediation scope")
 
         if classification.risk_score < self.minimum_risk_score:
-            return Decision(Action.ALERT_ONLY, False, "model risk score is below the remediation threshold")
+            return Decision(Action.ALERT_ONLY, False, "model anomaly score is below the remediation threshold")
 
         if event.severity.casefold() not in {"critical", "high"}:
             return Decision(Action.ALERT_ONLY, False, "Falco severity is below the remediation threshold")

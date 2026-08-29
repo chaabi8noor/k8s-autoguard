@@ -31,12 +31,13 @@ data:
           "type": "stat"
         },
         {
+          "description": "A baseline-relative anomaly ranking, not a compromise probability. It is shown only for predictions made within the last five minutes.",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "max": 1, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.95}]}, "unit": "percentunit"}, "overrides": []},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "max": 1, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.95}]}, "unit": "percentunit"}, "overrides": []},
           "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
           "options": {"orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showThresholdLabels": false, "showThresholdMarkers": true},
-          "targets": [{"expr": "autoguard_prediction_risk_score", "refId": "A"}],
-          "title": "Latest Risk Score",
+          "targets": [{"expr": "autoguard_prediction_risk_score and on() (time() - autoguard_prediction_last_seen_timestamp_seconds < 300)", "instant": true, "refId": "A"}],
+          "title": "Latest Anomaly Score",
           "type": "gauge"
         },
         {

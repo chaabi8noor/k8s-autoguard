@@ -200,7 +200,7 @@ def build_report() -> Path:
         )
     )
     story.extend([architecture, Spacer(1, 9 * mm)])
-    story.append(paragraph("The response path defaults to dry run. A Cilium isolation policy can be created only for an anomalous, high-risk, high-severity event in the permitted demo namespace. Kubernetes RBAC permits only create, get, and list access to CiliumNetworkPolicies in that namespace.", body))
+    story.append(paragraph("The response path defaults to dry run. A Cilium isolation policy can be created only for an anomalous event with a baseline-relative anomaly score above the configured threshold, high severity, and a permitted demo namespace. The score is not a compromise probability. Kubernetes RBAC permits only create, get, and list access to CiliumNetworkPolicies in that namespace.", body))
     story.append(paragraph("Implemented Controls", heading))
     controls = [
         ["Layer", "Implementation", "Evidence"],

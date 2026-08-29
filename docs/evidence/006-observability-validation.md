@@ -26,7 +26,7 @@ Docker Desktop WSL integration is required before these checks can be recorded a
 ./scripts/run-final-project-demo.sh --interactive
 ```
 
-The final demo script submits a high-risk ML event and a guarded remediation event, then `validate-observability.sh` confirms that both services expose the expected metric families through Kubernetes service proxies.
+The final demo script submits a high-anomaly ML event and a guarded remediation event, then `validate-observability.sh` confirms that both services expose the expected metric families through Kubernetes service proxies. The anomaly score is baseline-relative, not a compromise probability.
 
 Open Grafana locally:
 

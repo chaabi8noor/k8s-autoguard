@@ -33,7 +33,7 @@ GitHub pull request
 
 ## Safety Model
 
-Remediation defaults to dry run. A Cilium policy can be created only when the event is anomalous, risk meets the configured threshold, Falco severity is high or critical, and the namespace is `autoguard-demo`. The Kubernetes Role allows only create, get, and list access to CiliumNetworkPolicies in that namespace.
+Remediation defaults to dry run. A Cilium policy can be created only when the event is anomalous, its baseline-relative anomaly score meets the configured threshold, Falco severity is high or critical, and the namespace is `autoguard-demo`. The score is not a compromise probability. The Kubernetes Role allows only create, get, and list access to CiliumNetworkPolicies in that namespace.
 
 ## Verified Results
 

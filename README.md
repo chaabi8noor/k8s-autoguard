@@ -80,7 +80,7 @@ This builds the pinned-base Python image, loads it directly into KIND, and deplo
 ./scripts/run-final-project-demo.sh --interactive
 ```
 
-The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks predictions, latest risk, remediation mode, and platform logs. It is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
+The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks predictions, the latest fresh baseline-relative anomaly score, remediation mode, and platform logs. The anomaly score is not a compromise probability. This is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
 
 ## Model Benchmark
 

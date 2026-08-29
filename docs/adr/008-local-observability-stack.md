@@ -21,7 +21,7 @@ K8s AutoGuard needs visible, reproducible evidence of anomaly classification, gu
 Positive:
 
 - Prometheus can discover the two application services through versioned `ServiceMonitor` resources.
-- Grafana provides one dashboard for detection, risk, remediation mode, and platform logs.
+- Grafana provides one dashboard for detection, a fresh baseline-relative anomaly score, remediation mode, and platform logs.
 - Alert names and metric labels make it possible to distinguish detection from actual remediation.
 
 Trade-offs:
