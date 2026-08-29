@@ -12,7 +12,7 @@ The platform needs to move beyond alerting without granting broad cluster privil
 - Train an Isolation Forest on baseline event features and enrich its score with high-confidence Falco evidence.
 - Keep the remediation API in `dry-run` mode by default.
 - Allow active mode to create only a namespaced `CiliumNetworkPolicy` in `autoguard-demo`.
-- Require an in-scope namespace, a High or Critical severity, and a risk score of at least `0.80` before isolation is eligible.
+- Require an in-scope namespace, a High or Critical severity, and a baseline-relative anomaly score of at least `0.80` before isolation is eligible. The score is one guarded input, not a compromise probability.
 
 ## Consequences
 

@@ -1,7 +1,7 @@
 """Deterministic Isolation Forest training and inference helpers."""
 
 from dataclasses import dataclass
-from math import isfinite
+from math import exp, isfinite
 from pathlib import Path
 from typing import Mapping
 import warnings
@@ -98,12 +98,16 @@ def train_detector(normal_events: pd.DataFrame) -> Detector:
 
 
 def classify_event(detector: Detector, features: Mapping[str, float]) -> Classification:
-    """Return the model label and a calibrated 0.0 to 1.0 risk score."""
+    """Return the model label and a bounded anomaly score."""
 
     frame = _feature_frame(features)
     raw_anomaly_score = float(-detector.pipeline.score_samples(frame)[0])
     span = max(detector.risk_ceiling - detector.risk_floor, 1e-9)
-    risk_score = min(1.0, max(0.0, (raw_anomaly_score - detector.risk_floor) / span))
+    normalized_anomaly_score = max(
+        0.0, (raw_anomaly_score - detector.risk_floor) / span
+    )
+    # A smooth transform prevents arbitrary outliers from implying certainty.
+    risk_score = 0.99 * (1.0 - exp(-normalized_anomaly_score))
     first_event = frame.iloc[0]
     evidence = []
     if first_event["shell_exec"] >= 1:

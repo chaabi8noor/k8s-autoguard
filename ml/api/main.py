@@ -23,7 +23,9 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     is_anomaly: bool
-    risk_score: float
+    risk_score: float = Field(
+        description="Baseline-relative anomaly score, not a compromise probability."
+    )
     model_version: str
     evidence: list[str]
 
