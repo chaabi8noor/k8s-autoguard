@@ -4,6 +4,7 @@ set -euo pipefail
 readonly CLUSTER_NAME="${1:-k8s-autoguard}"
 readonly CONTEXT="kind-${CLUSTER_NAME}"
 readonly GRAFANA_SERVICE="autoguard-monitoring-grafana"
+readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ "$(kubectl config current-context)" != "${CONTEXT}" ]]; then
   echo "Expected Kubernetes context '${CONTEXT}'." >&2
@@ -12,6 +13,7 @@ fi
 
 kubectl -n autoguard-system get servicemonitor,prometheusrule
 kubectl -n monitoring get configmap autoguard-security-overview
+"${REPO_ROOT}/scripts/verify-grafana-dashboard.sh"
 
 echo "Checking ML API metrics through the Kubernetes service proxy..."
 kubectl get --raw \

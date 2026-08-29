@@ -52,6 +52,7 @@ kubectl apply -f "${REPO_ROOT}/observability/alerts/autoguard-alerts.yaml"
 kubectl apply -f "${REPO_ROOT}/observability/dashboards/autoguard-security-overview.yaml"
 
 kubectl -n "${MONITORING_NAMESPACE}" rollout status deployment/autoguard-monitoring-grafana --timeout=10m
+"${REPO_ROOT}/scripts/verify-grafana-dashboard.sh"
 kubectl -n "${LOKI_NAMESPACE}" rollout status statefulset/loki --timeout=10m
 kubectl -n "${LOKI_NAMESPACE}" rollout status daemonset/promtail --timeout=10m
 kubectl -n "${MONITORING_NAMESPACE}" get pods
