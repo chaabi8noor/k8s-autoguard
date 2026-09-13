@@ -30,4 +30,8 @@ kubectl rollout status "daemonset/${RELEASE_NAME}" \
   --namespace "${NAMESPACE}" \
   --timeout=10m
 
+kubectl rollout status "deployment/${RELEASE_NAME}-falcosidekick" \
+  --namespace "${NAMESPACE}" \
+  --timeout=10m
+
 kubectl get pods --namespace "${NAMESPACE}" -o wide

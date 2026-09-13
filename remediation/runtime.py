@@ -25,7 +25,7 @@ class HttpClassifier:
 
     def __init__(self, endpoint: str, client: httpx.Client | None = None) -> None:
         self.endpoint = endpoint
-        self.client = client or httpx.Client(timeout=5.0)
+        self.client = client or httpx.Client(timeout=15.0)
 
     def classify(self, features: Mapping[str, float]) -> Classification:
         payload = {**DEFAULT_MODEL_FEATURES, **features}

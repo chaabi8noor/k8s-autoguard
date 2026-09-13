@@ -49,13 +49,32 @@ def test_metrics_report_when_the_latest_prediction_was_recorded() -> None:
     )
 
 
-def test_dashboard_labels_the_anomaly_score_and_hides_stale_values() -> None:
+def test_dashboard_distinguishes_counts_from_fresh_anomaly_score() -> None:
     manifest = yaml.safe_load(DASHBOARD_FILE.read_text())
     dashboard = json.loads(manifest["data"]["autoguard-security-overview.json"])
-    panel = next(panel for panel in dashboard["panels"] if panel["title"] == "Latest Anomaly Score")
 
-    assert "not a compromise probability" in panel["description"]
-    assert panel["targets"] == [
+    anomaly_count = next(
+        panel
+        for panel in dashboard["panels"]
+        if panel["title"] == "Model Anomalies (since platform start)"
+    )
+    count_defaults = anomaly_count["fieldConfig"]["defaults"]
+
+    assert "count, not a percentage" in anomaly_count["description"]
+    assert count_defaults.get("unit") is None
+    assert count_defaults.get("max") is None
+
+    score_panel = next(
+        panel
+        for panel in dashboard["panels"]
+        if panel["title"] == "Fresh Anomaly Score (last 5m)"
+    )
+    score_defaults = score_panel["fieldConfig"]["defaults"]
+
+    assert "not a compromise probability" in score_panel["description"]
+    assert score_defaults["unit"] == "percentunit"
+    assert score_defaults["noValue"] == "No recent scoring event"
+    assert score_panel["targets"] == [
         {
             "expr": (
                 "autoguard_prediction_risk_score and on() "

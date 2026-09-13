@@ -28,6 +28,7 @@ helm upgrade --install "${MONITORING_RELEASE}" "${PROMETHEUS_CHART}" \
   --create-namespace \
   --version "${PROMETHEUS_VERSION}" \
   --values "${REPO_ROOT}/infra/helm/kube-prometheus-stack-values.yaml" \
+  --reset-values \
   --wait \
   --timeout 20m
 
@@ -52,6 +53,8 @@ kubectl apply -f "${REPO_ROOT}/observability/alerts/autoguard-alerts.yaml"
 kubectl apply -f "${REPO_ROOT}/observability/dashboards/autoguard-security-overview.yaml"
 
 kubectl -n "${MONITORING_NAMESPACE}" rollout status deployment/autoguard-monitoring-grafana --timeout=10m
+kubectl -n "${MONITORING_NAMESPACE}" rollout status deployment/autoguard-monitoring-kube-operator --timeout=10m
+kubectl -n "${MONITORING_NAMESPACE}" rollout status statefulset/prometheus-autoguard-monitoring-kube-prometheus --timeout=10m
 kubectl -n "${LOKI_NAMESPACE}" rollout status statefulset/loki --timeout=10m
 kubectl -n "${LOKI_NAMESPACE}" rollout status daemonset/promtail --timeout=10m
 kubectl -n "${MONITORING_NAMESPACE}" get pods

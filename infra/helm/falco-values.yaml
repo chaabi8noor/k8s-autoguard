@@ -11,6 +11,10 @@ driver:
   modernEbpf:
     leastPrivileged: true
 
+collectors:
+  kubernetes:
+    enabled: true
+
 falco:
   config_files: []
   time_format_iso_8601: true
@@ -32,18 +36,22 @@ customRules:
         AutoGuard controlled runtime test command executed
         (user=%user.name command=%proc.cmdline container=%container.name
         image=%container.image.repository)
-      priority: NOTICE
+      priority: CRITICAL
       tags: [container, process, autoguard]
 
 falcoctl:
   artifact:
     install:
-      enabled: false
+      enabled: true
     follow:
       enabled: false
 
 falcosidekick:
-  enabled: false
+  enabled: true
+  config:
+    webhook:
+      address: http://autoguard-event-ingestor.autoguard-system.svc.cluster.local:8000/falco-events
+      minimumpriority: critical
 
 responseActions:
   enabled: false

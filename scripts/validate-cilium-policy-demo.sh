@@ -62,7 +62,8 @@ kubectl apply -f "${POLICY_FILE}"
 echo "Checking policy enforcement..."
 wait_for_reachable trusted-client
 
-for _ in {1..10}; do
+# Cilium regenerates the selected endpoint asynchronously after a policy change.
+for _ in {1..30}; do
   if ! request_api untrusted-client >/dev/null 2>&1; then
     echo "untrusted-client is blocked by policy."
     exit 0

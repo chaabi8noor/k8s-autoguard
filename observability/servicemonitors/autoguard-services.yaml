@@ -29,3 +29,19 @@ spec:
     - port: http
       path: /metrics
       interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: autoguard-event-ingestor
+  namespace: autoguard-system
+  labels:
+    app.kubernetes.io/part-of: k8s-autoguard
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: autoguard-event-ingestor
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

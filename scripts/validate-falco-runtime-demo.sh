@@ -5,13 +5,15 @@ readonly CLUSTER_NAME="k8s-autoguard"
 readonly CONTEXT="kind-${CLUSTER_NAME}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly FALCO_NAMESPACE="falco"
-readonly DEMO_NAMESPACE="falco-demo"
+readonly DEMO_NAMESPACE="autoguard-demo"
 readonly DEMO_POD="shell-test"
 readonly WORKLOAD_FILE="${REPO_ROOT}/security/falco-rules/shell-test-workload.yaml"
 readonly CUSTOM_RULE="AutoGuard Controlled Runtime Test"
 
 cleanup() {
-  kubectl delete namespace "${DEMO_NAMESPACE}" --ignore-not-found --wait=true
+  kubectl -n "${DEMO_NAMESPACE}" delete pod "${DEMO_POD}" \
+    --ignore-not-found \
+    --wait=true
 }
 
 find_alert() {
