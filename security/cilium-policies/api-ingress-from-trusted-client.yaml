@@ -10,7 +10,7 @@ spec:
   ingress:
     - fromEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: trusted-client
+            k8s:app.kubernetes.io/name: trusted-client
       toPorts:
         - ports:
             - port: "8080"

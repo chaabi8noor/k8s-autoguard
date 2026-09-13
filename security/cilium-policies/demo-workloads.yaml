@@ -21,11 +21,9 @@ spec:
     spec:
       containers:
         - name: api
-          image: quay.io/cilium/json-mock:v1.4.1@sha256:6a66df90808a39c02e7a9d58af7bf0e54d8f8b7d4bc528f48c891969a7049195
+          # This pinned Nginx-based image is already used by the Hubble UI in the lab.
+          image: quay.io/cilium/hubble-ui:v0.13.5@sha256:f7d514fc54d784ed6df9d58cf0e97648b143f92b766dd1780ed3fc845bd4c516
           imagePullPolicy: IfNotPresent
-          env:
-            - name: PORT
-              value: "8080"
           ports:
             - containerPort: 8080
               name: http

@@ -18,36 +18,36 @@ data:
           "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
           "targets": [{"expr": "sum(autoguard_falco_events_total{outcome=\"forwarded\"})", "refId": "A"}],
-          "title": "Falco Events Forwarded",
+          "title": "Falco Events Forwarded (since platform start)",
           "type": "stat"
         },
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "fieldConfig": {"defaults": {"color": {"fixedColor": "blue", "mode": "fixed"}}, "overrides": []},
           "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
           "targets": [{"expr": "sum(autoguard_predictions_total)", "refId": "A"}],
-          "title": "Total Predictions",
+          "title": "Model Predictions (since platform start)",
           "type": "stat"
         },
         {
-          "description": "A baseline-relative anomaly ranking, not a compromise probability. It is shown only for predictions made within the last five minutes.",
+          "description": "Cumulative model classifications labelled anomalous since this platform pod started. This is a count, not a percentage.",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "max": 1, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.95}]}, "unit": "percentunit"}, "overrides": []},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
           "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
           "targets": [{"expr": "sum(autoguard_predictions_total{outcome=\"anomaly\"})", "refId": "A"}],
-          "title": "Anomalies Detected",
+          "title": "Model Anomalies (since platform start)",
           "type": "stat"
         },
         {
-          "description": "A baseline-relative anomaly ranking, not a compromise probability. It is shown only for predictions made within the last five minutes.",
+          "description": "A baseline-relative anomaly ranking, not a compromise probability. It is shown only when a prediction was recorded in the last five minutes.",
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "max": 1, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.95}]}, "unit": "percentunit"}, "overrides": []},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 1, "max": 1, "min": 0, "noValue": "No recent scoring event", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.95}]}, "unit": "percentunit"}, "overrides": []},
           "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
           "options": {"orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showThresholdLabels": false, "showThresholdMarkers": true},
           "targets": [{"expr": "autoguard_prediction_risk_score and on() (time() - autoguard_prediction_last_seen_timestamp_seconds < 300)", "instant": true, "refId": "A"}],
-          "title": "Latest Anomaly Score",
+          "title": "Fresh Anomaly Score (last 5m)",
           "type": "gauge"
         },
         {
@@ -55,8 +55,8 @@ data:
           "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
           "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
-          "targets": [{"expr": "sum by (outcome) (rate(autoguard_predictions_total[5m]))", "legendFormat": "{{outcome}}", "refId": "A"}],
-          "title": "Prediction Rate",
+          "targets": [{"expr": "sum by (outcome) (increase(autoguard_predictions_total[5m]))", "legendFormat": "{{outcome}}", "refId": "A"}],
+          "title": "Prediction Volume (last 5m)",
           "type": "timeseries"
         },
         {
@@ -65,7 +65,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
           "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
           "targets": [{"expr": "sum by (action, mode) (increase(autoguard_remediation_decisions_total[5m]))", "legendFormat": "{{action}} / {{mode}}", "refId": "A"}],
-          "title": "Guarded Remediation Decisions",
+          "title": "Dry-run Remediation Decisions (last 5m)",
           "type": "timeseries"
         },
         {

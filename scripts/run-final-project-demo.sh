@@ -50,11 +50,14 @@ scene "Scene 4: Metrics, alerts, and dashboard"
 "${REPO_ROOT}/scripts/validate-observability.sh"
 pause_for_recording
 
-scene "Scene 5: Protected CI evidence"
+scene "Scene 5: Current CI evidence"
 if command -v gh >/dev/null 2>&1; then
-  gh pr checks 9 --repo chaabi8noor/k8s-autoguard || true
+  gh run list \
+    --repo chaabi8noor/k8s-autoguard \
+    --limit 10 \
+    --json displayTitle,name,headBranch,status,conclusion,updatedAt
 else
-  echo "Open the repository Actions page to show the protected CI checks."
+  echo "GitHub CLI is unavailable. Open the repository Actions page to show current workflow runs."
 fi
 
 echo "Final demo complete. Open Grafana using the command in the video runbook."

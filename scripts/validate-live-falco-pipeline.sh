@@ -15,7 +15,14 @@ event_matches() {
 import json
 import sys
 
-payload = json.load(sys.stdin)
+raw_payload = sys.stdin.read()
+if not raw_payload.strip():
+    raise SystemExit(1)
+
+try:
+    payload = json.loads(raw_payload)
+except json.JSONDecodeError:
+    raise SystemExit(1)
 expected_command = sys.argv[1]
 resource = payload.get("remediation", {}).get("executed_resource") or ""
 raise SystemExit(not (

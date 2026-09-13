@@ -1,9 +1,38 @@
 ipam:
   mode: kubernetes
 
+# KIND imports platform-specific image manifests. Keep the chart's pinned tags,
+# but omit registry index digests so kubelet can use those locally loaded images.
+image:
+  useDigest: false
+
+operator:
+  image:
+    useDigest: false
+
+# Workloads selected by a Cilium policy are enforced; unrelated workloads
+# remain open until a policy selects them.
+policyEnforcementMode: default
+# A policy demo must enforce denies, not merely emit audit verdicts.
+policyAuditMode: false
+
+# The lab exercises L3/L4 policy enforcement and Hubble. A standalone Envoy
+# DaemonSet is unnecessary here and makes constrained native-Docker hosts pull
+# an additional large image before the cluster becomes usable.
+envoy:
+  enabled: false
+
 hubble:
   enabled: true
   relay:
     enabled: true
+    image:
+      useDigest: false
   ui:
     enabled: true
+    backend:
+      image:
+        useDigest: false
+    frontend:
+      image:
+        useDigest: false

@@ -49,7 +49,7 @@ docs/                       ADRs, evidence, and demo material
 
 ## Prerequisites
 
-- Docker Desktop with Ubuntu WSL 2 integration
+- Docker Engine reachable directly from Ubuntu WSL 2 (Docker Desktop is not required)
 - `kubectl`, `kind`, `helm`, Terraform, Ansible, and the Cilium CLI
 - Python 3.12 for model training and benchmarking
 
@@ -93,7 +93,7 @@ The ingestor accepts only the AutoGuard-tagged controlled Falco rule and require
 ./scripts/run-final-project-demo.sh --interactive
 ```
 
-The local stack uses Prometheus, Alertmanager, Loki, Promtail, and Grafana. The dashboard tracks forwarded Falco events, predictions, the latest fresh baseline-relative anomaly score, remediation mode, and platform logs. The anomaly score is not a compromise probability. This is intentionally a local-lab deployment with 24-hour metric retention and disposable Loki storage.
+The native-Docker local profile keeps Prometheus, Grafana, and the Prometheus Operator, while intentionally disabling Alertmanager, kube-state-metrics, and node-exporter. Loki and Promtail provide disposable local log storage when their rollout is validated. The dashboard tracks forwarded Falco events, predictions, the latest fresh baseline-relative anomaly score, remediation mode, and platform logs. The anomaly score is not a compromise probability.
 
 ## Model Benchmark
 
@@ -114,7 +114,11 @@ ansible-playbook -i infra/ansible/inventory.ini infra/ansible/site.yaml
 ./scripts/install-argocd.sh
 ```
 
-Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the established local installers. Argo CD reconciles `deployments/autoguard-platform` from `main` only after reviewed changes merge.
+Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the established local installers. The repository includes an Argo CD Application that reconciles `deployments/autoguard-platform` from `main` only after reviewed changes merge.
+
+### Argo CD Status
+
+The repository includes an Argo CD Application definition. A prior local-lab run verified `k8s-autoguard-platform` as `Synced` and `Healthy` against `main` revision `d65756e` on 2026-09-11. Re-run `./scripts/install-argocd.sh` and verify the Application before presenting that evidence from a newly created lab. The GitOps path remains local-lab evidence, not a production deployment.
 
 ## Evidence
 
@@ -132,6 +136,17 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 - [Final project report](docs/final-report.md)
 - [Final project report PDF](output/pdf/k8s-autoguard-final-report.pdf)
 
+## Live Validation Status
+
+The local lab was revalidated on 2026-09-11 with a real controlled runtime event on the worker node:
+
+- Falco detected a timestamped command in `autoguard-demo` and Sidekick forwarded its enriched workload identity.
+- The ingestor accepted one event, the prototype emitted one anomaly with a fresh score of `0.9`, and remediation recorded one `dry_run` Cilium isolation decision.
+- Prometheus returned those three counters from the live services, which is the source for the Grafana dashboard.
+- The Cilium policy was replayed with an open baseline, then a `trusted HTTP 200` response and an untrusted-client connection timeout after enforcement. Hubble UI provides the visual flow evidence when its local port-forward is running.
+
+These counters are labelled as platform-start totals or selected-window volumes. The score panel only displays a value observed in the last five minutes and otherwise says `No recent scoring event`.
+
 ## Decisions
 
 - [ADR 001: KIND baseline](docs/adr/001-kind-baseline.md)
@@ -146,4 +161,6 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 
 ## Current Operational Status
 
-The code, policies, IaC, benchmark, and live Falco-to-remediation path are versioned and locally validated. This remains a local lab: Docker Desktop WSL integration is required to recreate its live deployment, and the runtime feature mapping intentionally needs richer telemetry before it can support production risk decisions.
+The code, policies, IaC, benchmark, and live Falco-to-remediation path are versioned and locally validated. This remains a local lab: a native Docker Engine reachable from Ubuntu WSL is required to recreate its live deployment, and the runtime feature mapping intentionally needs richer telemetry before it can support production risk decisions.
+
+No production telemetry or production-trained model is included or claimed. The dataset is deterministic scenario data, and the current model is a deliberately narrow runtime-anomaly prototype. Training a credible production model requires authorized representative telemetry, data-governance controls, retained features, a labelled evaluation set, and measured performance on an unseen workload period.

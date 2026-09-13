@@ -1,0 +1,16 @@
+.git
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+
+# Generated or local-only artifacts are not part of the runtime image.
+benchmark/
+docs/
+infra/
+security/
+observability/dashboards/
+observability/tests/
+ml/tests/
+ingestion/tests/
+remediation/tests/

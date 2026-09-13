@@ -27,6 +27,21 @@ grafana:
       cpu: 1
       memory: 1Gi
 
+# Prometheus and Grafana are the evidence layer for this local AutoGuard lab.
+# Alertmanager and kube-state-metrics are intentionally omitted: they are not
+# inputs to the dashboard and otherwise introduce additional registry pulls.
+kubeStateMetrics:
+  enabled: false
+
+alertmanager:
+  enabled: false
+
+# Node-exporter is useful for host-capacity analysis, but the AutoGuard
+# evidence dashboard does not consume its metrics. Avoid a host-level
+# DaemonSet in the constrained local lab.
+nodeExporter:
+  enabled: false
+
 prometheusOperator:
   resources:
     requests:
@@ -52,16 +67,6 @@ prometheus:
       limits:
         cpu: 500m
         memory: 1Gi
-
-alertmanager:
-  alertmanagerSpec:
-    resources:
-      requests:
-        cpu: 25m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
 
 kubeEtcd:
   enabled: false

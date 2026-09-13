@@ -11,6 +11,10 @@ driver:
   modernEbpf:
     leastPrivileged: true
 
+collectors:
+  kubernetes:
+    enabled: true
+
 falco:
   config_files: []
   time_format_iso_8601: true
@@ -38,7 +42,7 @@ customRules:
 falcoctl:
   artifact:
     install:
-      enabled: false
+      enabled: true
     follow:
       enabled: false
 
