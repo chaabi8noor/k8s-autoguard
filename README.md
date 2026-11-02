@@ -105,6 +105,20 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 
 ## Evidence
 
+### Recorded Validation Screenshots
+
+These screenshots show the repository's recorded validation results. They document the completed checks below; live Grafana and end-to-end deployment evidence is still pending.
+
+**Kyverno admission controls and Trivy security gates** — the secure fixture was admitted, the insecure fixture was denied, and the scanned manifests had zero high or critical findings. [Read the validation record](docs/evidence/004-preventive-security-validation.md).
+
+![Recorded Kyverno admission and Trivy security validation results](https://github.com/user-attachments/assets/86479761-305d-4b56-8a7a-9227fcddd791)
+
+**Synthetic model benchmark** — 520 labelled scenario events, 1.00 recall, 0.08 false-positive rate, and 38.69 ms P95 in-process classification latency. [Read the benchmark record](docs/evidence/005-model-benchmark.md).
+
+![Recorded synthetic model benchmark results and measurement limitations](https://github.com/user-attachments/assets/def69549-379b-4e35-8f88-caaf794735e4)
+
+### Validation Records
+
 - Cilium connectivity validation: 77 tests and 320 actions passed
 - Cilium policy demo: trusted client allowed, untrusted client denied
 - Falco detected a controlled command and an interactive container shell
@@ -131,4 +145,8 @@ Terraform declares the Cilium-ready KIND topology. Ansible orchestrates the esta
 
 ## Current Operational Status
 
-The code, policies, IaC, and benchmark are versioned and locally validated. Docker Desktop WSL integration must be enabled before rerunning live deployment, Argo CD installation, and end-to-end cluster evidence collection.
+K8s AutoGuard is a reproducible local DevSecOps lab with recorded validation of Cilium network policies, Falco runtime detection, Kyverno admission controls, and Trivy security gates. The anomaly detector and guarded remediation API are implemented and tested; remediation defaults to dry run.
+
+The repository includes Terraform and Ansible definitions, an Argo CD application, and a Grafana dashboard definition. Observability tests and Helm rendering checks have passed. Final end-to-end acceptance of the deployed platform, including live Grafana evidence and Argo CD installation, remains pending. The [validation plan](docs/evidence/006-observability-validation.md) and [demo runbook](docs/demo/final-project-demo.md) document how to complete it on Docker Desktop with WSL 2 integration enabled.
+
+Benchmark results use deterministic synthetic scenarios and measure in-process classification latency; they do not establish production detection or response times.
